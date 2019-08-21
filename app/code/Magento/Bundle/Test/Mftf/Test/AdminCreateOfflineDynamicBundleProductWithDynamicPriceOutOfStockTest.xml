@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminCreateOfflineDynamicBundleProductWithDynamicPriceOutOfStockTest">
+        <annotations>
+            <stories value="Create Bundle Product"/>
+            <title value="Create offline dynamic bundle with dynamic price and out of stock"/>
+            <description value="Create offline dynamic bundle with dynamic price and out of stock"/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="MAGETWO-24118"/>
+            <group value="bundle"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <!-- Create Data -->
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="ApiSimpleProduct" stepKey="createProduct1">
+                <field key="price">100</field>
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="ApiSimpleProduct" stepKey="createProduct2">
+                <field key="price">50</field>
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+        </before>
+        <after>
+            <!-- Delete data -->
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <deleteData createDataKey="createProduct1" stepKey="deleteProduct1"/>
+            <deleteData createDataKey="createProduct2" stepKey="deleteProduct2"/>
+            <actionGroup ref="deleteProductBySku" stepKey="deleteBundle">
+                <argument name="sku" value="{{BundleProduct.sku}}"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logout"/>
+        </after>
+
+        <!-- 1. Login as admin -->
+        <actionGroup ref="LoginAsAdmin" stepKey="LoginAsAdmin"/>
+
+        <!-- 2. Navigate to the Products>Inventory>Catalog and 3. Click on "+" dropdown and select Bundle Product type-->
+        <amOnPage url="{{AdminProductCreatePage.url('4', 'bundle')}}" stepKey="amOnCreateBundleProductPage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+
+        <!--  4. Fill in all data according to data set -->
+        <fillField selector="{{AdminProductFormSection.productName}}" userInput="{{BundleProduct.name}}" stepKey="fillProductSku"/>
+        <fillField selector="{{AdminProductFormSection.productSku}}" userInput="{{BundleProduct.sku}}" stepKey="fillProductName"/>
+        <selectOption selector="{{AdminProductFormSection.productStockStatus}}" userInput="Out of Stock" stepKey="selectStockStatus"/>
+
+        <actionGroup ref="addBundleOptionWithTwoProducts" stepKey="addOptions">
+            <argument name="x" value="0"/>
+            <argument name="n" value="1"/>
+            <argument name="prodOneSku" value="$$createProduct1.sku$$"/>
+            <argument name="prodTwoSku" value="$$createProduct2.sku$$"/>
+            <argument name="optionTitle" value="Option Two"/>
+            <argument name="inputType" value="radio"/>
+        </actionGroup>
+        <selectOption userInput="Separately" selector="{{AdminProductFormBundleSection.shipmentType}}" stepKey="selectShipmentType"/>
+        <actionGroup ref="AdminSwitchProductGiftMessageStatusActionGroup" stepKey="enableGiftMessageSettings">
+            <argument name="status" value="1"/>
+        </actionGroup>
+        <!--  5. Save product and Assert Product Save Message-->
+        <actionGroup ref="saveProductForm" stepKey="clickSaveButton"/>
+
+        <!-- Assert product in grid -->
+        <amOnPage url="{{ProductCatalogPage.url}}" stepKey="amOnProductGridPage"/>
+        <waitForPageLoad stepKey="waitForPageLoading"/>
+        <actionGroup ref="resetProductGridToDefaultView" stepKey="setDefaultView"/>
+        <actionGroup ref="filterProductGridBySku2" stepKey="filterParoduct">
+            <argument name="sku" value="{{BundleProduct.sku}}"/>
+        </actionGroup>
+        <see selector="{{AdminProductGridSection.productGridCell('1', 'Name')}}" userInput="{{BundleProduct.name}}"  stepKey="seeProductNameInGrid"/>
+        <click selector="{{AdminProductGridFilterSection.clearFilters}}" stepKey="clickClearFiltersAfter"/>
+
+        <!-- Assert product not searchable by Sku -->
+        <amOnPage url="{{StorefrontHomePage.url}}" stepKey="amOnStorefront"/>
+        <actionGroup ref="StorefrontCheckQuickSearchStringActionGroup" stepKey="searchBySku">
+            <argument name="phrase" value="{{BundleProduct.sku}}"/>
+        </actionGroup>
+        <see userInput="Your search returned no results." selector="{{StorefrontMessagesSection.noticeMessage}}" stepKey="seeMessage"/>
+    </test>
+</tests>

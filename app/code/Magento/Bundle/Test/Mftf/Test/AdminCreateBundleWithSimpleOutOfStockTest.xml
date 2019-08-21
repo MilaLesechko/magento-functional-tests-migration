@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminCreateBundleWithSimpleOutOfStockTest">
+        <annotations>
+            <stories value="Create Bundle Product"/>
+            <title value="Create bundle with simple out of stock"/>
+            <description value="Create bundle with simple out of stock"/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="MAGETWO-24118"/>
+            <group value="bundle"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <!-- Create Data -->
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="SimpleOutOfStockProduct" stepKey="createProduct1">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="SimpleOutOfStockProduct" stepKey="createProduct2">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+        </before>
+        <after>
+            <!-- Delete data -->
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <deleteData createDataKey="createProduct1" stepKey="deleteProduct1"/>
+            <deleteData createDataKey="createProduct2" stepKey="deleteProduct2"/>
+            <actionGroup ref="deleteProductBySku" stepKey="deleteBundle">
+                <argument name="sku" value="{{BundleProduct.sku}}"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logout"/>
+        </after>
+
+        <!-- 1. Login as admin -->
+        <actionGroup ref="LoginAsAdmin" stepKey="LoginAsAdmin"/>
+
+        <!-- 2. Navigate to the Products>Inventory>Catalog and 3. Click on "+" dropdown and select Bundle Product type-->
+        <amOnPage url="{{AdminProductCreatePage.url('4', 'bundle')}}" stepKey="amOnCreateBundleProductPage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+
+        <!--  4. Fill in all data according to data set -->
+        <fillField selector="{{AdminProductFormSection.productName}}" userInput="{{BundleProduct.name}}" stepKey="fillProductSku"/>
+        <fillField selector="{{AdminProductFormSection.productSku}}" userInput="{{BundleProduct.sku}}" stepKey="fillProductName"/>
+
+        <actionGroup ref="addBundleOptionWithTwoProducts" stepKey="addOptions">
+            <argument name="x" value="0"/>
+            <argument name="n" value="1"/>
+            <argument name="prodOneSku" value="$$createProduct1.sku$$"/>
+            <argument name="prodTwoSku" value="$$createProduct2.sku$$"/>
+            <argument name="optionTitle" value="Option Two"/>
+            <argument name="inputType" value="Drop-down"/>
+        </actionGroup>
+
+        <!--  5. Save product and Assert Product Save Message-->
+        <actionGroup ref="saveProductForm" stepKey="clickSaveButton"/>
+
+        <!-- Assert Product Out Of Stock -->
+        <actionGroup ref="OpenStoreFrontProductPageActionGroup" stepKey="openProduct">
+            <argument name="productUrlKey" value="{{BundleProduct.name}}"/>
+        </actionGroup>
+
+        <see userInput="Out of stock" selector="{{StorefrontProductInfoMainSection.stockIndication}}" stepKey="assertProductOutOfStock"/>
+    </test>
+</tests>

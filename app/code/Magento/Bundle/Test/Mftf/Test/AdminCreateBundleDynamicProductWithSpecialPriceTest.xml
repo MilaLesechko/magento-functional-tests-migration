@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminCreateBundleDynamicProductWithSpecialPriceTest">
+        <annotations>
+            <stories value="Create Bundle Product"/>
+            <title value="Create Bundle (dynamic) Product with special price"/>
+            <description value="Create Bundle (dynamic) Product with special price"/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="MAGETWO-24118"/>
+            <group value="bundle"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <!-- Create Data -->
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="ApiSimpleProduct" stepKey="createProduct1">
+                <field key="price">100.00</field>
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="ApiSimpleProduct" stepKey="createProduct2">
+                <field key="price">40.00</field>
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+        </before>
+        <after>
+            <!-- Delete data -->
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <deleteData createDataKey="createProduct1" stepKey="deleteProduct1"/>
+            <deleteData createDataKey="createProduct2" stepKey="deleteProduct2"/>
+            <actionGroup ref="deleteProductBySku" stepKey="deleteBundle">
+                <argument name="sku" value="{{BundleProduct.sku}}"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logout"/>
+        </after>
+
+        <!-- 1. Login as admin -->
+        <actionGroup ref="LoginAsAdmin" stepKey="LoginAsAdmin"/>
+
+        <!-- 2. Navigate to the Products>Inventory>Catalog and 3. Click on "+" dropdown and select Bundle Product type-->
+        <amOnPage url="{{AdminProductCreatePage.url('4', 'bundle')}}" stepKey="amOnCreateBundleProductPage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+
+        <!--  4. Fill in all data according to data set -->
+        <fillField selector="{{AdminProductFormSection.productName}}" userInput="{{BundleProduct.name}}" stepKey="fillProductSku"/>
+        <fillField selector="{{AdminProductFormSection.productSku}}" userInput="{{BundleProduct.sku}}" stepKey="fillProductName"/>
+        <selectOption selector="{{AdminProductFormSection.productStockStatus}}" userInput="In Stock" stepKey="selectStockStatus"/>
+
+        <actionGroup ref="addBundleOptionWithTwoProductsAndQtyActionGroup" stepKey="addOptions">
+            <argument name="x" value="0"/>
+            <argument name="n" value="1"/>
+            <argument name="prodOneSku" value="$$createProduct1.sku$$"/>
+            <argument name="prodTwoSku" value="$$createProduct2.sku$$"/>
+            <argument name="optionTitle" value="Option Two"/>
+            <argument name="inputType" value="Drop-down"/>
+            <argument name="qty1" value="1"/>
+            <argument name="qty2" value="1"/>
+        </actionGroup>
+
+        <scrollTo selector="{{AdminProductFormSection.productStockStatus}}" stepKey="scrollToCategory"/>
+        <searchAndMultiSelectOption selector="{{AdminProductFormSection.categoriesDropdown}}" parameterArray="[$$createCategory.name$$]" stepKey="addProductToCategory"/>
+        <waitForPageLoad stepKey="waitForPageLoaded"/>
+
+        <scrollTo selector="{{AdminProductFormSection.productSku}}" stepKey="scrollToSection"/>
+        <click selector="{{AdminProductFormSection.advancedPricingLink}}" stepKey="clickButtonAdvancedPrice"/>
+        <waitForElementVisible selector="{{AdminProductFormAdvancedPricingSection.specialPrice}}" stepKey="waitForPricing"/>
+        <fillField userInput="20" selector="{{AdminProductFormAdvancedPricingSection.specialPrice}}" stepKey="fillSpecialPrice"/>
+        <click selector="{{AdminProductFormAdvancedPricingSection.doneButton}}" stepKey="clickDoneButton"/>
+        <waitForPageLoad stepKey="waitForSavingSpecialPrice"/>
+
+        <!--  5. Save product and Assert Product Save Message-->
+        <actionGroup ref="saveProductForm" stepKey="clickSaveButton"/>
+
+        <!-- Assert Bundle In Category: Verify product price on category view page. -->
+        <actionGroup ref="AssertProductInStorefrontCategoryPage" stepKey="assertProductInCategory">
+            <argument name="category" value="$$createCategory$$"/>
+            <argument name="product" value="BundleProduct"/>
+        </actionGroup>
+
+        <!-- Assert Bundle Price View -->
+        <actionGroup ref="OpenStoreFrontProductPageActionGroup" stepKey="openProduct">
+            <argument name="productUrlKey" value="{{BundleProduct.name}}"/>
+        </actionGroup>
+
+        <actionGroup ref="AssertStorefrontElementVisibleActionGroup" stepKey="seePriceRangeIsVisible">
+            <argument name="selector" value="{{StorefrontProductInfoMainSection.priceFrom}}"/>
+            <argument name="userInput" value="From $8.00"/>
+        </actionGroup>
+
+        <actionGroup ref="AssertStorefrontElementVisibleActionGroup" stepKey="seeOldPriceRangeIsVisible">
+            <argument name="selector" value="{{StorefrontProductInfoMainSection.oldPrice}}"/>
+            <argument name="userInput" value="Regular Price $40.00"/>
+        </actionGroup>
+
+        <actionGroup ref="AssertStorefrontElementVisibleActionGroup" stepKey="seePriceRangeIsVisible1">
+            <argument name="selector" value="{{StorefrontProductInfoMainSection.priceTo}}"/>
+            <argument name="userInput" value="To $20.00"/>
+        </actionGroup>
+
+        <actionGroup ref="AssertStorefrontElementVisibleActionGroup" stepKey="seeOldPriceRangeIsVisible1">
+            <argument name="selector" value="{{StorefrontProductInfoMainSection.oldPrice}}"/>
+            <argument name="userInput" value="Regular Price $100.00"/>
+        </actionGroup>
+    </test>
+</tests>

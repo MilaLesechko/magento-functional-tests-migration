@@ -24,6 +24,7 @@
             <constraint name="Magento\Bundle\Test\Constraint\AssertBundleItemsOnProductPage" />
         </variation>
         <variation name="CreateBundleProductEntityTestVariation2">
+            <data name="tag" xsi:type="string">mftf_migrated:yes</data>
             <data name="description" xsi:type="string">Create offline dynamic bundle with dynamic price and out of stock</data>
             <data name="product/data/url_key" xsi:type="string">bundle-product-%isolation%</data>
             <data name="product/data/name" xsi:type="string">BundleProduct %isolation%</data>
@@ -120,6 +121,7 @@
             <constraint name="Magento\Bundle\Test\Constraint\AssertBundleInCategory" />
         </variation>
         <variation name="CreateBundleProductEntityTestVariation9">
+            <data name="tag" xsi:type="string">mftf_migrated:yes</data>
             <data name="description" xsi:type="string">Create dynamic bundle with group price</data>
             <data name="product/data/url_key" xsi:type="string">bundle-product-%isolation%</data>
             <data name="product/data/name" xsi:type="string">Bundle Dynamic %isolation%</data>
@@ -153,6 +155,7 @@
         </variation>
         <variation name="CreateBundleProductEntityTestVariation11">
             <data name="issue" xsi:type="string">MAGETWO-52788: Dynamic Rows: support status being changed</data>
+            <data name="tag" xsi:type="string">mftf_migrated:yes</data>
             <data name="description" xsi:type="string">Create fixed product with checkout first option</data>
             <data name="product/data/url_key" xsi:type="string">bundle-product-%isolation%</data>
             <data name="product/data/name" xsi:type="string">Bundle Fixed %isolation%</data>
@@ -173,6 +176,7 @@
             <constraint name="Magento\Bundle\Test\Constraint\AssertProductCustomOptionsOnBundleProductPage" />
         </variation>
         <variation name="CreateBundleProductEntityTestVariation13">
+            <data name="tag" xsi:type="string">mftf_migrated:yes</data>
             <data name="description" xsi:type="string">Create default dynamic bundle</data>
             <data name="product/data/url_key" xsi:type="string">bundle-product-%isolation%</data>
             <data name="product/data/name" xsi:type="string">Bundle Dynamic %isolation%</data>
@@ -224,6 +228,7 @@
             <constraint name="Magento\Bundle\Test\Constraint\AssertTierPriceOnBundleProductPage" />
         </variation>
         <variation name="CreateBundleProductEntityTestVariation19" summary="Create bundle with simple out of stock">
+            <data name="tag" xsi:type="string">mftf_migrated:yes</data>
             <data name="product/data/url_key" xsi:type="string">bundle-product-%isolation%</data>
             <data name="product/data/name" xsi:type="string">BundleProduct %isolation%</data>
             <data name="product/data/sku" xsi:type="string">bundle_sku_%isolation%</data>
@@ -236,6 +241,7 @@
             <constraint name="Magento\Catalog\Test\Constraint\AssertProductOutOfStock" />
         </variation>
         <variation name="CreateBundleProductEntityTestVariation23" summary="Create Bundle (dynamic) Product with special price">
+            <data name="tag" xsi:type="string">mftf_migrated:yes</data>
             <data name="product/data/url_key" xsi:type="string">bundle-product-%isolation%</data>
             <data name="product/data/name" xsi:type="string">Bundle Dynamic %isolation%</data>
             <data name="product/data/sku_type" xsi:type="string">Yes</data>
@@ -249,6 +255,7 @@
             <constraint name="Magento\Bundle\Test\Constraint\AssertBundleProductPage" />
         </variation>
         <variation name="CreateBundleProductEntityTestVariation24" summary="Create Bundle (dynamic) Product with One of the bundle options has special price">
+            <data name="tag" xsi:type="string">mftf_migrated:yes</data>
             <data name="product/data/url_key" xsi:type="string">bundle-product-%isolation%</data>
             <data name="product/data/name" xsi:type="string">Bundle Dynamic %isolation%</data>
             <data name="product/data/sku_type" xsi:type="string">Yes</data>
@@ -260,6 +267,7 @@
             <constraint name="Magento\Bundle\Test\Constraint\AssertBundleProductPage" />
         </variation>
         <variation name="CreateBundleProductEntityTestVariation25" summary="Create Bundle (dynamic) Product with one require option with one item" ticketId="MAGETWO-59841">
+            <data name="tag" xsi:type="string">mftf_migrated:yes</data>
             <data name="product/data/url_key" xsi:type="string">bundle-product-%isolation%</data>
             <data name="product/data/name" xsi:type="string">Bundle Dynamic %isolation%</data>
             <data name="product/data/sku" xsi:type="string">sku_bundle_dynamic_%isolation%</data>

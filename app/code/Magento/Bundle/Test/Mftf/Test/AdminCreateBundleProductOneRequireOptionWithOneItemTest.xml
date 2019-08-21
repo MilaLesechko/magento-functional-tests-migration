@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminCreateBundleProductOneRequireOptionWithOneItemTest">
+        <annotations>
+            <stories value="Create Bundle Product"/>
+            <title value="Create Bundle (dynamic) Product with one require option with one item"/>
+            <description value="Create Bundle (dynamic) Product with one require option with one item"/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="MAGETWO-59841"/>
+            <group value="bundle"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <!-- Create Data -->
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="defaultSimpleProduct" stepKey="createProduct1">
+                <field key="price">560.00</field>
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+        </before>
+        <after>
+            <!-- Delete data -->
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <deleteData createDataKey="createProduct1" stepKey="deleteProduct1"/>
+            <actionGroup ref="deleteProductBySku" stepKey="deleteBundle">
+                <argument name="sku" value="{{BundleProduct.sku}}"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logout"/>
+        </after>
+
+        <!-- 1. Login as admin -->
+        <actionGroup ref="LoginAsAdmin" stepKey="LoginAsAdmin"/>
+
+        <!-- 2. Navigate to the Products>Inventory>Catalog and 3. Click on "+" dropdown and select Bundle Product type-->
+        <amOnPage url="{{AdminProductCreatePage.url('4', 'bundle')}}" stepKey="amOnCreateBundleProductPage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+
+        <!--  4. Fill in all data according to data set -->
+        <fillField selector="{{AdminProductFormSection.productName}}" userInput="{{BundleProduct.name}}" stepKey="fillProductSku"/>
+        <fillField selector="{{AdminProductFormSection.productSku}}" userInput="{{BundleProduct.sku}}" stepKey="fillProductName"/>
+        <selectOption selector="{{AdminProductFormSection.productStockStatus}}" userInput="In Stock" stepKey="selectStockStatus"/>
+
+        <conditionalClick selector="{{AdminProductFormBundleSection.bundleItemsToggle}}" dependentSelector="{{AdminProductFormBundleSection.bundleItemsToggle}}" visible="false" stepKey="conditionallyOpenSectionBundleItems"/>
+        <scrollTo selector="{{AdminProductFormBundleSection.bundleItemsToggle}}" stepKey="scrollUpABit"/>
+        <click selector="{{AdminProductFormBundleSection.addOption}}" stepKey="clickAddOption"/>
+        <waitForElementVisible selector="{{AdminProductFormBundleSection.bundleOptionXTitle('0')}}" stepKey="waitForOptions"/>
+        <fillField selector="{{AdminProductFormBundleSection.bundleOptionXTitle('0')}}" userInput="Option First" stepKey="fillTitle"/>
+        <selectOption selector="{{AdminProductFormBundleSection.bundleOptionXInputType('0')}}" userInput="Drop-down" stepKey="selectType"/>
+        <waitForElementVisible selector="{{AdminProductFormBundleSection.nthAddProductsToOption('1')}}" stepKey="waitForAddBtn"/>
+        <click selector="{{AdminProductFormBundleSection.nthAddProductsToOption('1')}}" stepKey="clickAdd"/>
+        <conditionalClick selector="{{AdminProductGridFilterSection.clearFilters}}" dependentSelector="{{AdminProductGridFilterSection.clearFilters}}" visible="true" stepKey="clickClearFilters1"/>
+        <click selector="{{AdminProductGridFilterSection.filters}}" stepKey="openProductFilters1"/>
+        <fillField selector="{{AdminProductGridFilterSection.skuFilter}}" userInput="$$createProduct1.sku$$" stepKey="fillProductSkuFilter1"/>
+        <click selector="{{AdminProductGridFilterSection.applyFilters}}" stepKey="clickApplyFilters1"/>
+        <waitForElementNotVisible selector="{{AdminProductGridSection.loadingMask}}" stepKey="waitForFilteredGridLoad1" time="30"/>
+        <checkOption selector="{{AdminAddProductsToOptionPanel.firstCheckbox}}" stepKey="selectProduct1"/>
+        <click selector="{{AdminAddProductsToOptionPanel.addSelectedProducts}}" stepKey="clickAddButton1"/>
+        <fillField selector="{{AdminProductFormBundleSection.bundleOptionXProductYQuantity('0', '0')}}" userInput="1" stepKey="fillQuantity1"/>
+
+        <scrollTo selector="{{AdminProductFormSection.productStockStatus}}" stepKey="scrollToCategory"/>
+        <searchAndMultiSelectOption selector="{{AdminProductFormSection.categoriesDropdown}}" parameterArray="[$$createCategory.name$$]" stepKey="addProductToCategory"/>
+        <waitForPageLoad stepKey="waitForPageLoaded"/>
+
+        <!--  5. Save product and Assert Product Save Message-->
+        <actionGroup ref="saveProductForm" stepKey="clickSaveButton"/>
+
+        <!-- Assert Bundle Price Calculated On Product Page -->
+        <actionGroup ref="OpenStoreFrontProductPageActionGroup" stepKey="openProduct">
+            <argument name="productUrlKey" value="{{BundleProduct.name}}"/>
+        </actionGroup>
+        <click selector="{{AdminProductFormBundleSection.bundleOptionSelector}}" stepKey="clickCustomizeProduct"/>
+        <waitForPageLoad stepKey="waitForPageLoading"/>
+        <see userInput="$$createProduct1.name$$" selector="{{AdminProductFormBundleSection.singleBundleOption}}" stepKey="seeOptionSelected"/>
+        <actionGroup ref="StorefrontEnterProductQuantityAndAddToTheCartActionGroup" stepKey="enterProductQuantityAndAddToTheCart">
+            <argument name="quantity" value="3"/>
+        </actionGroup>
+
+        <scrollToTopOfPage stepKey="scrollToTop"/>
+        <actionGroup ref="StorefrontOpenCartFromMinicartActionGroup" stepKey="openShoppingCart"/>
+        <waitForPageLoad stepKey="waitForCartOpen"/>
+        <see userInput="$560.00" selector="{{StorefrontMinicartSection.productPriceByItem(BundleProduct.name)}}" stepKey="seePriceBundleItem"/>
+        <see userInput="$1,680.00" selector="{{CheckoutCartProductSection.checkoutCartSubtotal}}" stepKey="seeSubtotalPrice"/>
+    </test>
+</tests>

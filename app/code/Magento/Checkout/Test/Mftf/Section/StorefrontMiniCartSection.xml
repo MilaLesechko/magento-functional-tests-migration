@@ -7,7 +7,7 @@
 -->
 
 <sections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:mftf:Page/etc/SectionObject.xsd">
+          xsi:noNamespaceSchemaLocation="urn:magento:mftf:Page/etc/SectionObject.xsd">
     <section name="StorefrontMinicartSection">
         <element name="blockMiniCart" type="block" selector=".block-minicart" timeout="30"/>
         <element name="productCount" type="text" selector="//header//div[contains(@class, 'minicart-wrapper')]//a[contains(@class, 'showcart')]//span[@class='counter-number']"/>
@@ -39,5 +39,6 @@
         <element name="productQuantity" type="input" selector="//*[@id='mini-cart']//a[contains(text(),'{{productName}}')]/../..//div[@class='details-qty qty']//input[@data-item-qty='{{qty}}']" parameterized="true"/>
         <element name="productImage" type="text" selector="//ol[@id='mini-cart']//img[@class='product-image-photo']"/>
         <element name="productSubTotal" type="text" selector="//div[@class='subtotal']//span/span[@class='price']"/>
+        <element name="productPriceByItem" type="text" selector="//a[@title='{{productName}}']/../following-sibling::td[contains(@class, 'price')]/span/span/span" parameterized="true"/>
     </section>
 </sections>
