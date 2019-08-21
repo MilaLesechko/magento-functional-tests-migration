@@ -16,7 +16,7 @@
         <element name="widgetStoreIds" type="select" selector="#store_ids"/>
         <element name="addLayoutUpdate" type="button" selector=".action-default.scalable.action-add"/>
         <element name="selectDisplayOn" type="select" selector="#widget_instance[0][page_group]"/>
-        <element name="selectContainer" type="select" selector="#all_pages_0>table>tbody>tr>td:nth-child(1)>div>div>select"/>
+        <element name="selectContainer" type="select" selector=".block_reference_container select"/>
         <element name="selectTemplate" type="select" selector=".widget-layout-updates .block_template_container .select"/>
         <element name="widgetOptions" type="select" selector="#widget_instace_tabs_properties_section"/>
         <element name="addNewCondition" type="select" selector=".rule-param.rule-param-new-child"/>
@@ -35,5 +35,14 @@
         <element name="displayMode" type="select" selector="select[id*='display_mode']"/>
         <element name="restrictTypes" type="select" selector="select[id*='types']"/>
         <element name="saveAndContinue" type="button" selector="#save_and_edit_button" timeout="30"/>
+        <!-- Widget Options: CMS Static Block -->
+        <element name="selectBlock" type="button" selector="button.btn-chooser" timeout="30"/>
+        <!-- Widget Options: Recently Viewed Products -->
+        <element name="productsAttributesToShow" type="select" selector="[name='parameters[show_attributes][1]']"/>
+        <element name="buttonsToShow" type="select" selector="[name='parameters[show_buttons][2]']"/>
+        <!-- Widget Options: Catalog Product Link  -->
+        <element name="resetFilterProductGrid" type="button" selector=".modal-slide button.action-reset"/>
+        <element name="filterBySku" type="input" selector=".modal-slide [name='chooser_sku']"/>
+        <element name="searchButton" type="button" selector=".modal-slide button.action-secondary"/>
     </section>
 </sections>

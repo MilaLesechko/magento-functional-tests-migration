@@ -26,4 +26,8 @@
         <checkOption selector="{{CategoryDisplaySettingsSection.anchor}}" stepKey="enableAnchor"/>
         <click selector="{{AdminCategoryMainActionsSection.SaveButton}}" stepKey="saveSubCategory"/>
     </actionGroup>
+
+    <actionGroup name="AdminNonAnchorCategoryActionGroup" extends="AdminAnchorCategoryActionGroup">
+        <click selector="{{CategoryDisplaySettingsSection.anchorLabel}}" stepKey="enableAnchor"/>
+    </actionGroup>
 </actionGroups>

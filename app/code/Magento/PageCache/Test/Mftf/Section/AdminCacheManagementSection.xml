@@ -31,5 +31,6 @@
         <element name="webServicesConfigCheckbox" type="checkbox" selector="input[value='config_webservice']"/>
         <element name="translationsCheckbox" type="checkbox" selector="input[value='translate']"/>
         <element name="additionalCacheButton" type="button" selector="//*[@id='container']//button[contains(., '{{cacheType}}')]" parameterized="true" />
+        <element name="statusByTag" type="block" selector="//td[contains(text(), '{{tag}}')]/./following-sibling::td/span/span" parameterized="true"/>
     </section>
 </sections>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AssertWidgetWithInvalidatedBlockHtmlCacheTypeTest">
+        <annotations>
+            <stories value="Create Widget"/>
+            <title value="Assert widget with invalidated block_html cache type"/>
+            <description value="There is no cache invalidate popup after creating widget with disabled block_html cache type"/>
+            <testCaseId value="MAGETWO-27916"/>
+            <severity value="MAJOR"/>
+            <group value="widget"/>
+            <group value="mtf_migrated"/>
+            <skip>
+                <issueId value="MAGETWO-58146"/>
+            </skip>
+        </annotations>
+        <before>
+            <actionGroup ref="LoginAsAdmin" stepKey="loginAsAdmin"/>
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+        </before>
+
+        <after>
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <actionGroup ref="AdminDeleteWidgetActionGroup" stepKey="deleteWidget">
+                <argument name="widget" value="DefaultCatalogCategoryLinkWidget"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logoutOfAdmin"/>
+        </after>
+        <!-- Create Widget CMS Static Block -->
+        <actionGroup ref="AdminCreateWidgetActionGroup" stepKey="createWidget">
+            <argument name="widget" value="DefaultCatalogCategoryLinkWidget"/>
+        </actionGroup>
+
+        <!-- Add widget options for Catalog Product Link -->
+        <waitForElement selector="{{AdminNewWidgetSection.widgetSelectBlock}}" stepKey="waitWidgetOptions"/>
+        <click selector="{{AdminNewWidgetSection.widgetSelectBlock}}" stepKey="clickButtonSelectProduct"/>
+        <waitForPageLoad stepKey="waitForFormLoad"/>
+        <click selector="{{AdminCategorySidebarTreeSection.expandRootCategory}}" stepKey="clickRootCategory"/>
+        <waitForPageLoad stepKey="waitForCategoryTreeOpen"/>
+        <click selector="{{AdminCategorySidebarTreeSection.categoryInTree('$$createCategory.name$$')}}" stepKey="openRootCategory"/>
+        <waitForPageLoad stepKey="waitForWidgetPageLoad"/>
+        <click selector="{{AdminNewWidgetSection.saveWidget}}" stepKey="saveWidget"/>
+        <waitForPageLoad stepKey="waitForSaving"/>
+
+        <!-- Assert widget success save message -->
+        <see userInput="The widget instance has been saved." stepKey="assertWidgetSuccessSaveMessage"/>
+
+        <!-- When bug will be fixed MAGETWO-58146: Assert Cache invalidate popup should appeared -->
+
+        <!-- Assert Cache Invalidate Notice -->
+        <see userInput="One or more of the Cache Types are invalidated" selector="{{AdminMessagesSection.warningMessage}}" stepKey="assertCacheInvalidateNotice"/>
+
+        <!-- Assert Cache Status -->
+        <amOnPage url="{{AdminCacheManagementPage.url}}" stepKey="onCachePage"/>
+        <waitForPageLoad stepKey="waitForAdminPageLoad"/>
+        <see userInput="Invalidated" selector="{{AdminCacheManagementSection.statusByTag('BLOCK_HTML')}}" stepKey="seeBlockHtmlDisabled"/>
+        <see userInput="Invalidated" selector="{{AdminCacheManagementSection.statusByTag('FPC')}}" stepKey="seePageCacheInvalidated"/>
+
+        <!-- Failed! Assert Widget Absent On FrontendHome -->
+        <amOnPage url="{{StorefrontHomePage.url}}" stepKey="onStorefrontHomePage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+        <dontSeeElement selector="{{StorefrontWidgetsSection.widgetCatalogCategoryLink}}" stepKey="assertWidgetAbsentOnFrontendHome"/>
+    </test>
+</tests>

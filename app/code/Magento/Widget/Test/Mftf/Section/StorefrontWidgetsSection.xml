@@ -13,5 +13,8 @@
         <element name="widgetProductName" type="text" selector=".product-item-name"/>
         <element name="widgetBlock" type="block" selector=".widget"/>
         <element name="widgetTitle" type="text" selector=".block-title"/>
+        <element name="widgetCatalogProductLink" type="block" selector=".widget.block-product-link"/>
+        <element name="widgetCatalogProductLinkUrl" type="button" selector=".widget.block-product-link a"/>
+        <element name="widgetCatalogCategoryLink" type="block" selector=".widget.block-category-link"/>
     </section>
 </sections>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminCreateWidgetCmsStaticBlockTest">
+        <annotations>
+            <stories value="Create Widget"/>
+            <title value="Create Widget CMS Static Block"/>
+            <description value="Create Widget CMS Static Block"/>
+            <testCaseId value="MAGETWO-27916"/>
+            <severity value="CRITICAL"/>
+            <group value="widget"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <actionGroup ref="LoginAsAdmin" stepKey="loginAsAdmin"/>
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <actionGroup ref="AdminNonAnchorCategoryActionGroup" stepKey="nonAnchor">
+                <argument name="categoryName" value="$$createCategory.name$$"/>
+            </actionGroup>
+        </before>
+
+        <after>
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <actionGroup ref="AdminDeleteWidgetActionGroup" stepKey="deleteWidget">
+                <argument name="widget" value="DefaultCmsStaticBlockWidget"/>
+            </actionGroup>
+            <actionGroup ref="deleteBlock" stepKey="deleteCreatedBlock">
+                <argument name="Block" value="_defaultBlock"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logoutOfAdmin"/>
+        </after>
+
+        <!--Create new CMS Block page-->
+        <amOnPage url="{{CmsNewBlock.url}}" stepKey="amOnBlocksCreationForm"/>
+        <waitForPageLoad stepKey="waitForPageLoad1"/>
+        <click selector="{{BlockNewPagePageActionsSection.expandSplitButton}}"  stepKey="expandSplitBtn1" />
+        <actionGroup ref="FillOutBlockContent" stepKey="FillOutBlockContent"/>
+        <click selector="{{BlockNewPagePageActionsSection.expandSplitButton}}"  stepKey="expandSplitBtn2" />
+        <click selector="{{BlockNewPagePageActionsSection.saveAndClose}}"  stepKey="saveBlock" />
+        <waitForLoadingMaskToDisappear stepKey="waitForLoadingMask"/>
+        <waitForPageLoad stepKey="waitForPageLoad3"/>
+        <see userInput="You saved the block." stepKey="seeSavedBlockMsgOnForm"/>
+
+        <!-- Create Widget CMS Static Block -->
+        <actionGroup ref="AdminCreateWidgetActionGroup" stepKey="createWidget">
+            <argument name="widget" value="DefaultCmsStaticBlockWidget"/>
+        </actionGroup>
+
+        <!-- Add widget settings: Add CMS Block -->
+        <waitForElement selector="{{AdminNewWidgetSection.widgetSelectBlock}}" time="60" stepKey="waitForSelectBlock"/>
+        <click selector="{{AdminNewWidgetSection.widgetSelectBlock}}" stepKey="openSelectBlock"/>
+        <waitForPageLoad stepKey="waitForLoadBlocks"/>
+        <fillField selector="{{AdminNewWidgetSection.selectBlockTitle}}" userInput="{{_defaultBlock.title}}" stepKey="fillBlockTitle"/>
+        <click selector="{{AdminNewWidgetSection.searchBlock}}" stepKey="searchBlock"/>
+        <waitForAjaxLoad stepKey="waitForAjaxLoad"/>
+        <click selector="{{AdminNewWidgetSection.searchedBlock}}" stepKey="clickSearchedBlock"/>
+        <waitForPageLoad stepKey="wait"/>
+        <click selector="{{AdminNewWidgetSection.saveWidget}}" stepKey="saveWidget"/>
+        <waitForPageLoad stepKey="waitForSaving"/>
+
+        <!-- Assert widget success save message -->
+        <see userInput="The widget instance has been saved." stepKey="assertWidgetSuccessSaveMessage"/>
+        <magentoCLI command="cache:flush" stepKey="flushCache"/>
+
+        <!-- Assert widget on frontend in catalog -->
+        <amOnPage url="{{StorefrontCategoryPage.url($$createCategory.name$$)}}" stepKey="onCategory"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+        <see selector="{{StorefrontWidgetsSection.widgetBlock}}" userInput="{{_defaultBlock.content}}" stepKey="seeCMSBlockInWidget"/>
+    </test>
+</tests>

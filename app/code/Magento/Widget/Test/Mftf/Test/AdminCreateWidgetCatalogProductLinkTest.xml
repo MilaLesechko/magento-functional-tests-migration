@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminCreateWidgetCatalogProductLinkTest">
+        <annotations>
+            <stories value="Create Widget"/>
+            <title value="Create Widget Catalog Product Link"/>
+            <description value="Create Widget Catalog Product Link"/>
+            <testCaseId value="MAGETWO-27916"/>
+            <severity value="CRITICAL"/>
+            <group value="widget"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <actionGroup ref="LoginAsAdmin" stepKey="loginAsAdmin"/>
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="defaultSimpleProduct" stepKey="simpleProduct1"/>
+            <createData entity="ApiSimpleProduct" stepKey="simpleProduct2">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="ApiSimpleProduct" stepKey="simpleProduct3">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="ApiSimpleProduct" stepKey="simpleProduct4">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+        </before>
+
+        <after>
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <deleteData createDataKey="simpleProduct1" stepKey="deleteProduct1"/>
+            <deleteData createDataKey="simpleProduct2" stepKey="deleteProduct2"/>
+            <deleteData createDataKey="simpleProduct3" stepKey="deleteProduct3"/>
+            <deleteData createDataKey="simpleProduct4" stepKey="deleteProduct4"/>
+
+            <actionGroup ref="AdminDeleteWidgetActionGroup" stepKey="deleteWidget">
+                <argument name="widget" value="DefaultCatalogProductLinkWidget"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logoutOfAdmin"/>
+        </after>
+
+        <!-- Create Widget Catalog Product Link -->
+        <actionGroup ref="AdminCreateWidgetActionGroup" stepKey="createWidget">
+            <argument name="widget" value="DefaultCatalogProductLinkWidget"/>
+        </actionGroup>
+
+        <!-- Add widget options for Catalog Product Link -->
+        <waitForElement selector="{{AdminNewWidgetSection.widgetSelectBlock}}" stepKey="waitWidgetOptions"/>
+        <click selector="{{AdminNewWidgetSection.widgetSelectBlock}}" stepKey="clickButtonSelectProduct"/>
+        <waitForPageLoad stepKey="waitForFormLoad"/>
+        <click selector="{{AdminNewWidgetSection.resetFilterProductGrid}}" stepKey="clickResetButton"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+        <fillField selector="{{AdminNewWidgetSection.filterBySku}}" userInput="$$simpleProduct1.sku$$" stepKey="fillProduct1Name_"/>
+        <click selector="{{AdminNewWidgetSection.searchButton}}" stepKey="clickButtonSearch"/>
+        <waitForPageLoad stepKey="waitForPageToLoadBeforeClickingOnSearchFilter"/>
+        <click selector="{{WidgetSection.PreCreateProductBySKU('$$simpleProduct1.sku$$')}}" stepKey="selectProduct1" />
+        <waitForPageLoad stepKey="waitForWidgetPageLoad"/>
+        <click selector="{{AdminNewWidgetSection.saveWidget}}" stepKey="saveWidget"/>
+        <waitForPageLoad stepKey="waitForSaving"/>
+
+        <!-- Assert widget success save message -->
+        <see userInput="The widget instance has been saved." stepKey="assertWidgetSuccessSaveMessage"/>
+        <magentoCLI command="cache:flush" stepKey="flushCache"/>
+
+        <!-- Assert widget Catalog Product Link on frontend in catalog -->
+        <amOnPage url="{{StorefrontCategoryPage.url($$createCategory.name$$)}}" stepKey="onCategory"/>
+        <waitForPageLoad stepKey="waitForCategoryPageLoad"/>
+        <seeElement selector="{{StorefrontWidgetsSection.widgetCatalogProductLink}}" stepKey="seeWidget"/>
+
+        <click selector="{{StorefrontWidgetsSection.widgetCatalogProductLinkUrl}}" stepKey="clickWidget"/>
+        <waitForPageLoad stepKey="waitForProductPageLoad"/>
+        <see userInput="$$simpleProduct1.name$$" selector="{{StorefrontProductInfoMainSection.productName}}" stepKey="seeTitleProduct"/>
+    </test>
+</tests>

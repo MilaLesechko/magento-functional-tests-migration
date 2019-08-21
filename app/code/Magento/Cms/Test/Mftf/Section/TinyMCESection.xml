@@ -97,6 +97,7 @@
         <element name="BlockPage" type="text" selector="//td[contains(text(),'{{var1}}')]" parameterized="true"/>
         <element name="PreCreateCategory" type="text" selector=" //span[contains(text(),'{{var1}}')]" parameterized="true"/>
         <element name="PreCreateProduct" type="text" selector="//td[contains(text(),'{{var1}}')]" parameterized="true"/>
+        <element name="PreCreateProductBySKU" type="text" selector="//td[contains(text(),'{{var1}}')][1]" parameterized="true"/>
         <element name="NoOfProductToDisplay" type="input" selector="input[data-ui-id='wysiwyg-widget-options-fieldset-element-text-parameters-products-count']"/>
         <element name="AddParam" type="button" selector=".rule-param-add"/>
         <element name="ConditionsDropdown" type="select" selector="#conditions__1__new_child"/>

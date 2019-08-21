@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminCreateRecentlyComparedProductsTest">
+        <annotations>
+            <stories value="Create Widget"/>
+            <title value="Create Widget Recently Compared Products"/>
+            <description value="Create Widget Recently Compared Products"/>
+            <testCaseId value="MAGETWO-27916"/>
+            <severity value="CRITICAL"/>
+            <group value="widget"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <actionGroup ref="LoginAsAdmin" stepKey="loginAsAdmin"/>
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="ApiSimpleProduct" stepKey="simpleProduct1">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="ApiSimpleProduct" stepKey="simpleProduct2">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="ApiSimpleProduct" stepKey="simpleProduct3">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+        </before>
+
+        <after>
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <deleteData createDataKey="simpleProduct1" stepKey="deleteProduct1"/>
+            <deleteData createDataKey="simpleProduct2" stepKey="deleteProduct2"/>
+            <deleteData createDataKey="simpleProduct3" stepKey="deleteProduct3"/>
+            <actionGroup ref="AdminDeleteWidgetActionGroup" stepKey="deleteWidget">
+                <argument name="widget" value="DefaultResentlyComparedProductsWidget"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logoutOfAdmin"/>
+        </after>
+
+        <!-- Create Widget Recently Viewed Products -->
+        <actionGroup ref="AdminCreateWidgetActionGroup" stepKey="createWidget">
+            <argument name="widget" value="DefaultResentlyComparedProductsWidget"/>
+        </actionGroup>
+
+        <!-- Add widget options for resently viewed products widget -->
+        <waitForElement selector="{{WidgetSection.PageSize}}" stepKey="waitWidgetOptions"/>
+        <fillField userInput="{{DefaultRecentlyViewedProductWidget.page_size}}" selector="{{WidgetSection.PageSize}}" stepKey="openSelectBlock"/>
+        <selectOption selector="{{AdminNewWidgetSection.productsAttributesToShow}}" parameterArray="[{{DefaultResentlyComparedProductsWidget.show_attributes[0]}},{{DefaultResentlyComparedProductsWidget.show_attributes[1]}},{{DefaultResentlyComparedProductsWidget.show_attributes[2]}}]" stepKey="selectAttributes"/>
+        <selectOption selector="{{AdminNewWidgetSection.buttonsToShow}}" parameterArray="[{{DefaultResentlyComparedProductsWidget.show_buttons[0]}}, {{DefaultResentlyComparedProductsWidget.show_buttons[1]}}, {{DefaultResentlyComparedProductsWidget.show_buttons[2]}}]" stepKey="selectButtons"/>
+        <click selector="{{AdminNewWidgetSection.saveWidget}}" stepKey="saveWidget"/>
+        <waitForPageLoad stepKey="waitForSaving"/>
+
+        <!-- Assert widget success save message -->
+        <see userInput="The widget instance has been saved." stepKey="assertWidgetSuccessSaveMessage"/>
+        <magentoCLI command="cache:flush" stepKey="flushCache"/>
+
+        <!-- Assert widget recently viewed products -->
+        <actionGroup ref="OpenStoreFrontProductPageActionGroup" stepKey="openProduct1">
+            <argument name="productUrlKey" value="$$simpleProduct1.custom_attributes[url_key]$$"/>
+        </actionGroup>
+        <actionGroup ref="StorefrontAddProductToCompareActionGroup" stepKey="addToCompareProduct1">
+            <argument name="productVar" value="$$simpleProduct1$$"/>
+        </actionGroup>
+
+        <actionGroup ref="OpenStoreFrontProductPageActionGroup" stepKey="openProduct2">
+            <argument name="productUrlKey" value="$$simpleProduct2.custom_attributes[url_key]$$"/>
+        </actionGroup>
+        <actionGroup ref="StorefrontAddProductToCompareActionGroup" stepKey="addToCompareProduct2">
+            <argument name="productVar" value="$$simpleProduct2$$"/>
+        </actionGroup>
+
+        <actionGroup ref="OpenStoreFrontProductPageActionGroup" stepKey="openProduct3">
+            <argument name="productUrlKey" value="$$simpleProduct3.custom_attributes[url_key]$$"/>
+        </actionGroup>
+        <actionGroup ref="StorefrontAddProductToCompareActionGroup" stepKey="addToCompareProduct3">
+            <argument name="productVar" value="$$simpleProduct3$$"/>
+        </actionGroup>
+        <amOnPage url="{{StorefrontCategoryPage.url($$createCategory.name$$)}}" stepKey="onCategory"/>
+        <waitForPageLoad stepKey="waitForCategoryPageLoad"/>
+        <actionGroup ref="StorefrontClearCompareActionGroup" stepKey="clearCompare"/>
+
+        <amOnPage url="{{StorefrontHomePage.url}}" stepKey="amOnHomePage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+        <seeElement selector="{{StorefrontWidgetsSection.widgetRecentlyComparedProductsGrid}}" stepKey="seeWidget"/>
+        <actionGroup ref="StorefrontAssertProductInRecentlyComparedWidgetActionGroup" stepKey="seeProduct1InWidget">
+            <argument name="product" value="$$simpleProduct1$$"/>
+        </actionGroup>
+        <actionGroup ref="StorefrontAssertProductInRecentlyComparedWidgetActionGroup" stepKey="seeProduct2InWidget">
+            <argument name="product" value="$$simpleProduct2$$"/>
+        </actionGroup>
+        <actionGroup ref="StorefrontAssertProductInRecentlyComparedWidgetActionGroup" stepKey="seeProduct3InWidget">
+            <argument name="product" value="$$simpleProduct3$$"/>
+        </actionGroup>
+    </test>
+</tests>
