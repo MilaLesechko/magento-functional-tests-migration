@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminCreateWidgetEntityTestWithDifferentThemesTest">
+        <annotations>
+            <stories value="Create Widget"/>
+            <title value="Widgets with different themes is presented in grid/filter"/>
+            <description value="Widgets with different themes is presented in grid/filter"/>
+            <testCaseId value="MAGETWO-60672"/>
+            <severity value="MAJOR"/>
+            <group value="widget"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <actionGroup ref="LoginAsAdmin" stepKey="loginAsAdmin"/>
+        </before>
+
+        <after>
+            <actionGroup ref="AdminDeleteWidgetActionGroup" stepKey="deleteWidgetCmsPageLink">
+                <argument name="widget" value="DefaultCmsPageLink"/>
+            </actionGroup>
+            <actionGroup ref="AdminDeleteWidgetActionGroup" stepKey="deleteWidget">
+                <argument name="widget" value="RecentlyViewedProductBlankWidget"/>
+            </actionGroup>
+            <actionGroup ref="logout" stepKey="logoutOfAdmin"/>
+        </after>
+
+        <!-- Create Widget CMS Page Link -->
+        <actionGroup ref="AdminCreateWidgetActionGroup" stepKey="createWidgetCMS">
+            <argument name="widget" value="DefaultCmsPageLink"/>
+        </actionGroup>
+
+        <!-- Add widget options for CMS Page Link -->
+        <waitForElement selector="{{AdminNewWidgetSection.widgetSelectBlock}}" stepKey="waitForOptions"/>
+        <click selector="{{AdminNewWidgetSection.widgetSelectBlock}}" stepKey="clickButtonSelectLink"/>
+        <waitForPageLoad stepKey="waitForFormLoad"/>
+        <click selector="{{AdminNewWidgetSection.resetFilterProductGrid}}" stepKey="clickResetButton"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+        <click selector="{{WidgetSection.PreCreateProduct('Home page')}}" stepKey="selectPage" />
+        <waitForPageLoad stepKey="waitForCmsWidgetPageLoad"/>
+        <click selector="{{AdminNewWidgetSection.saveWidget}}" stepKey="saveWidgetCms"/>
+        <waitForPageLoad stepKey="waitForSaving"/>
+
+        <!-- Assert widget success save message -->
+        <see userInput="The widget instance has been saved." stepKey="assertCmsWidgetSuccessSaveMessage"/>
+
+        <!-- Create Widget Recently Viewed Products -->
+        <actionGroup ref="AdminCreateWidgetActionGroup" stepKey="createWidget">
+            <argument name="widget" value="RecentlyViewedProductBlankWidget"/>
+        </actionGroup>
+
+        <!-- Add widget options for resently viewed products widget -->
+        <waitForElement selector="{{WidgetSection.PageSize}}" stepKey="waitWidgetOptions"/>
+        <fillField userInput="{{RecentlyViewedProductBlankWidget.page_size}}" selector="{{WidgetSection.PageSize}}" stepKey="openSelectBlock"/>
+        <selectOption selector="{{AdminNewWidgetSection.productsAttributesToShow}}" parameterArray="[{{RecentlyViewedProductBlankWidget.show_attributes[0]}},{{RecentlyViewedProductBlankWidget.show_attributes[1]}},{{RecentlyViewedProductBlankWidget.show_attributes[2]}},{{RecentlyViewedProductBlankWidget.show_attributes[3]}}]" stepKey="selectAttributes"/>
+        <selectOption selector="{{AdminNewWidgetSection.buttonsToShow}}" parameterArray="[{{RecentlyViewedProductBlankWidget.show_buttons[0]}}, {{RecentlyViewedProductBlankWidget.show_buttons[1]}}, {{RecentlyViewedProductBlankWidget.show_buttons[2]}}]" stepKey="selectButtons"/>
+        <click selector="{{AdminNewWidgetSection.saveWidget}}" stepKey="saveWidget"/>
+        <waitForPageLoad stepKey="waitForSaveWidget"/>
+
+        <!-- Assert widget success save message -->
+        <see userInput="The widget instance has been saved." stepKey="assertWidgetSuccessSaveMessage"/>
+
+        <!-- Assert theme filter values on widget grid -->
+        <amOnPage url="{{AdminWidgetsPage.url}}" stepKey="amOnWidgetsPage"/>
+        <waitForPageLoad stepKey="waitForWidgetsGridOpen"/>
+        <see userInput="Magento Blank" selector="{{AdminWidgetsSection.optionFilterByTheme}}" stepKey="seeFilterTheme"/>
+        <see userInput="Magento Luma" selector="{{AdminWidgetsSection.optionFilterByTheme}}" stepKey="seeThemeInFilter"/>
+        <see userInput="Magento Blank" selector="{{AdminWidgetsSection.themeInGridByName(RecentlyViewedProductBlankWidget.name)}}" stepKey="seeGridTheme"/>
+        <see userInput="Magento Luma" selector="{{AdminWidgetsSection.themeInGridByName(DefaultCmsPageLink.name)}}" stepKey="seeThemeInGrid"/>
+
+        <!-- Assert widgets in grid -->
+        <see userInput="{{DefaultCmsPageLink.name}}" selector="{{AdminWidgetsSection.widgetNameInGrid}}" stepKey="seeCmsWidget"/>
+        <see userInput="{{RecentlyViewedProductBlankWidget.name}}" selector="{{AdminWidgetsSection.widgetNameInGrid}}" stepKey="seeRecentlyViewedProductBlankWidget"/>
+    </test>
+</tests>
