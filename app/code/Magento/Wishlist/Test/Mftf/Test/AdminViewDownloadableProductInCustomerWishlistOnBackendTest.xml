@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminViewDownloadableProductInCustomerWishlistOnBackendTest">
+        <annotations>
+            <stories value="Wishlist"/>
+            <title value="View Downloadable Product in Customer Wishlist on Backend"/>
+            <description value="View Downloadable Product in Customer Wishlist on Backend"/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="MAGETWO-29616"/>
+            <group value="wishlist"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <!-- Create Data -->
+            <createData entity="Simple_US_Customer" stepKey="createCustomer"/>
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="DownloadableProductWithTwoLink100" stepKey="createDownloadableProduct">
+                <field key="price">30</field>
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="downloadableLink1" stepKey="addDownloadableLink1">
+                <requiredEntity createDataKey="createDownloadableProduct"/>
+            </createData>
+            <createData entity="downloadableLink2" stepKey="addDownloadableLink2">
+                <requiredEntity createDataKey="createDownloadableProduct"/>
+            </createData>
+        </before>
+        <after>
+            <!-- Delete data -->
+            <deleteData createDataKey="createCustomer" stepKey="deleteCustomer"/>
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <deleteData createDataKey="createDownloadableProduct" stepKey="deleteProduct"/>
+            <actionGroup ref="logout" stepKey="logout"/>
+        </after>
+
+        <actionGroup ref="LoginAsAdmin" stepKey="LoginAsAdmin"/>
+        <actionGroup ref="navigateToCreatedProductEditPage" stepKey="goToDownloadableProduct">
+            <argument name="product" value="$$createDownloadableProduct$$"/>
+        </actionGroup>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+        <scrollTo selector="{{AdminProductDownloadableSection.sectionHeader}}" stepKey="scrollToDownloadableInformation"/>
+        <checkOption selector="{{AdminProductDownloadableSection.isLinksPurchasedSeparately}}" stepKey="checkOption"/>
+        <waitForAjaxLoad stepKey="waitForAjaxLoad"/>
+        <grabValueFrom selector="{{AdminProductDownloadableSection.addLinkTitleInput('0')}}" stepKey="grabLink1"/>
+        <grabValueFrom selector="{{AdminProductDownloadableSection.addLinkTitleInput('1')}}" stepKey="grabLink2"/>
+        <click selector="{{AdminProductFormSection.save}}" stepKey="clickSave"/>
+        <waitForLoadingMaskToDisappear stepKey="waitForSave"/>
+
+        <!-- 1. Login as a customer -->
+        <actionGroup ref="LoginToStorefrontActionGroup" stepKey="loginToStorefrontAccount">
+            <argument name="Customer" value="$$createCustomer$$"/>
+        </actionGroup>
+
+        <!-- 2. Navigate to catalog page -->
+        <actionGroup ref="OpenStoreFrontProductPageActionGroup" stepKey="openProductFromCategory">
+            <argument name="productUrlKey" value="$$createDownloadableProduct.custom_attributes[url_key]$$"/>
+        </actionGroup>
+
+        <scrollTo selector="{{StorefrontDownloadableProductSection.downloadableLinkByTitle({$grabLink1})}}" stepKey="scrollToLinkBlock"/>
+        <checkOption selector="{{StorefrontDownloadableProductSection.downloadableLinkByTitle({$grabLink1})}}" stepKey="checkLink1"/>
+
+        <!--  3. Add created product to Wishlist according to dataset and assert add product to wishlist success message -->
+        <actionGroup ref="StorefrontCustomerAddProductToWishlistActionGroup" stepKey="addProductToWishlist">
+            <argument name="productVar" value="$$createDownloadableProduct$$"/>
+        </actionGroup>
+        
+        <!-- Assert Downloadable Product In Customer Wishlist On Backend Grid -->
+        <amOnPage url="{{AdminEditCustomerPage.url($$createCustomer.id$$)}}" stepKey="amOnCustomersPage"/>
+        <waitForPageLoad stepKey="waitForPageLoad1"/>
+        <click selector="{{WishlistGeneralSection.WishlistTab}}" stepKey="clickWishlistTab"/>
+        <waitForPageLoad stepKey="waitForPageLoad2"/>
+        <see selector="{{WishlistGeneralSection.productNameInGrid}}" userInput="$$createDownloadableProduct.name$$" stepKey="seeProductName"/>
+        <see selector="{{WishlistGeneralSection.productOptionByProductNameInGrid($$createDownloadableProduct.name$$)}}" userInput="{$grabLink1}" stepKey="seeFirstLink"/>
+        <seeElement selector="{{WishlistGeneralSection.configureButtonWishlistByName($$createDownloadableProduct.name$$)}}" stepKey="seeConfigButton"/>
+    </test>
+</tests>

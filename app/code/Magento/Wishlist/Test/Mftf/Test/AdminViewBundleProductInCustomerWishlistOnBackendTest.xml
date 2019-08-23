@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /**
+  * Copyright © Magento, Inc. All rights reserved.
+  * See COPYING.txt for license details.
+  */
+-->
+
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminViewBundleProductInCustomerWishlistOnBackendTest">
+        <annotations>
+            <stories value="Wishlist"/>
+            <title value="View Bundle Product in Customer Wishlist on Backend"/>
+            <description value="View Bundle Product in Customer Wishlist on Backend"/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="MAGETWO-29616"/>
+            <group value="wishlist"/>
+            <group value="mtf_migrated"/>
+        </annotations>
+        <before>
+            <!-- Create Data -->
+            <createData entity="Simple_US_Customer" stepKey="createCustomer"/>
+            <createData entity="_defaultCategory" stepKey="createCategory"/>
+            <createData entity="SimpleProduct2" stepKey="simpleProduct1">
+                <field key="price">100</field>
+            </createData>
+            <createData entity="SimpleProduct2" stepKey="simpleProduct2">
+                <field key="price">100</field>
+            </createData>
+            <!--Create Bundle product-->
+            <createData entity="BundleProductPriceViewRange" stepKey="createBundleProduct">
+                <requiredEntity createDataKey="createCategory"/>
+            </createData>
+            <createData entity="DropDownBundleOption" stepKey="createBundleOption1_1">
+                <requiredEntity createDataKey="createBundleProduct"/>
+                <field key="required">True</field>
+            </createData>
+            <createData entity="ApiBundleLink" stepKey="linkOptionToProduct">
+                <requiredEntity createDataKey="createBundleProduct"/>
+                <requiredEntity createDataKey="createBundleOption1_1"/>
+                <requiredEntity createDataKey="simpleProduct1"/>
+            </createData>
+            <createData entity="ApiBundleLink" stepKey="linkOptionToProduct2">
+                <requiredEntity createDataKey="createBundleProduct"/>
+                <requiredEntity createDataKey="createBundleOption1_1"/>
+                <requiredEntity createDataKey="simpleProduct2"/>
+            </createData>
+
+            <actionGroup ref="LoginAsAdmin" stepKey="LoginAsAdmin"/>
+            <actionGroup ref="goToProductPageViaID" stepKey="goToProduct">
+                <argument name="productId" value="$$createBundleProduct.id$$"/>
+            </actionGroup>
+            <scrollTo selector="{{AdminProductFormBundleSection.contentDropDown}}" stepKey="scrollToBundleSection"/>
+            <selectOption userInput="Separately" selector="{{AdminProductFormBundleSection.shipmentType}}" stepKey="selectSeparately"/>
+            <actionGroup ref="saveProductForm" stepKey="saveProduct"/>
+        </before>
+        <after>
+            <!-- Delete data -->
+            <deleteData createDataKey="createCustomer" stepKey="deleteCustomer"/>
+            <deleteData createDataKey="createCategory" stepKey="deleteCategory"/>
+            <deleteData createDataKey="createBundleProduct" stepKey="deleteBundleProduct"/>
+            <deleteData createDataKey="simpleProduct1" stepKey="deleteProduct1"/>
+            <deleteData createDataKey="simpleProduct2" stepKey="deleteProduct2"/>
+            <actionGroup ref="logout" stepKey="logout"/>
+        </after>
+
+        <!-- 1. Login as a customer -->
+        <actionGroup ref="LoginToStorefrontActionGroup" stepKey="loginToStorefrontAccount">
+            <argument name="Customer" value="$$createCustomer$$"/>
+        </actionGroup>
+
+        <!-- 2. Navigate to catalog page -->
+        <actionGroup ref="OpenStoreFrontProductPageActionGroup" stepKey="openProductFromCategory">
+            <argument name="productUrlKey" value="$$createBundleProduct.custom_attributes[url_key]$$"/>
+        </actionGroup>
+        <actionGroup ref="StorefrontSelectCustomizeAndAddToTheCartButtonActionGroup" stepKey="clickCustomizeButton"/>
+        <selectOption selector="{{StorefrontBundledSection.dropDownOptionOneProducts($$createBundleOption1_1.title$$)}}" userInput="$$simpleProduct1.sku$$ +$100.00" stepKey="selectOption0Product0"/>
+        <seeOptionIsSelected selector="{{StorefrontBundledSection.dropDownOptionOneProducts($$createBundleOption1_1.title$$)}}" userInput="$$simpleProduct1.sku$$ +$100.00" stepKey="checkOption0Product0"/>
+        <fillField selector="{{StorefrontBundledSection.dropDownOptionOneQuantity($$createBundleOption1_1.title$$)}}" userInput="1" stepKey="fillQuantity00"/>
+        <seeInField selector="{{StorefrontBundledSection.dropDownOptionOneQuantity($$createBundleOption1_1.title$$)}}" userInput="1" stepKey="checkQuantity00"/>
+        <scrollToTopOfPage stepKey="scroll"/>
+
+        <!--  3. Add created product to Wishlist according to dataset and assert add product to wishlist success message -->
+        <actionGroup ref="StorefrontCustomerAddProductToWishlistActionGroup" stepKey="addProductToWishlist">
+            <argument name="productVar" value="$$createBundleProduct$$"/>
+        </actionGroup>
+
+        <!-- Assert Bundle Product In Customer Wishlist On Backend Grid -->
+        <amOnPage url="{{AdminEditCustomerPage.url($$createCustomer.id$$)}}" stepKey="amOnCustomersPage"/>
+        <waitForPageLoad stepKey="waitForPageLoad"/>
+        <click selector="{{WishlistGeneralSection.WishlistTab}}" stepKey="clickWishlistTab"/>
+        <waitForPageLoad stepKey="waitForPageLoad1"/>
+        <see selector="{{WishlistGeneralSection.productNameInGrid}}" userInput="$$createBundleProduct.name$$" stepKey="seeProductName"/>
+        <see selector="{{WishlistGeneralSection.productAttributeByProductNameInGrid($$createBundleProduct.name$$)}}" userInput="$$createBundleOption1_1.title$$" stepKey="seeOption"/>
+        <see selector="{{WishlistGeneralSection.productOptionByProductNameInGrid($$createBundleProduct.name$$)}}" userInput="1 x $$simpleProduct1.sku$$" stepKey="seeOptionProduct"/>
+        <see selector="{{WishlistGeneralSection.productOptionPriceByProductNameInGrid($$createBundleProduct.name$$)}}" userInput="$100.00" stepKey="seePriceOption"/>
+        <seeElement selector="{{WishlistGeneralSection.configureButtonWishlistByName($$createBundleProduct.name$$)}}" stepKey="seeConfigButton"/>
+    </test>
+</tests>
