@@ -40,7 +40,7 @@
             <actionGroup ref="AdminDeleteWidgetActionGroup" stepKey="deleteWidget">
                 <argument name="widget" value="DefaultResentlyComparedProductsWidget"/>
             </actionGroup>
-            <actionGroup ref="logout" stepKey="logoutOfAdmin"/>
+            <actionGroup ref="AdminLogoutActionGroup" stepKey="logoutOfAdmin"/>
         </after>
 
         <!-- Create Widget Recently Viewed Products -->
